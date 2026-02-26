@@ -133,25 +133,22 @@ executor = AgentExecutor(agent=agent, tools=[]).with_middleware(middleware)
 ```
 
 
-
 ## Supported frameworks
 
 | Framework | Adapter | Status |
-||||
+|---|---|---|
 | Google ADK ≥ 1.25.0 | `NativeADKToolset` | ✅ |
 | LangChain ≥ 1.0 | `NativeHotReloadMiddleware` | ✅ |
 | LlamaIndex | — | Planned |
 | OpenAI function calling | — | Planned |
 | Anthropic tool use | — | Planned |
 
-
-
 ## Type system
 
 The host marshals Python values into `MemoryBuffer` structs before calling your plugin. Buffer element dtype is detected automatically from the Python buffer's format string.
 
 | C type | `type_id` | Python side |
-||||
+|---|---|---|
 | `double[]` / `float[]` / `int64[]` | `TYPE_BUFFER` | `memoryview`, `array.array`, NumPy array |
 | `double` scalar | `TYPE_FLOAT` | `float` |
 | `int64_t` scalar | `TYPE_INT` | `int` |
@@ -160,12 +157,10 @@ The host marshals Python values into `MemoryBuffer` structs before calling your 
 
 `'d'` → F64, `'f'` → F32, `'q'` → I64.
 
-
-
 ## Platform support
 
 | Platform | Status | Notes |
-||||
+|---|---|---|
 | Windows x64 | ✅ Tested | MSVC, `.dll` |
 | Linux x64 | ✅ Should work | GCC/Clang, `.so` |
 | macOS | ⚠️ Untested | Clang, `.dylib`, expected to work |
