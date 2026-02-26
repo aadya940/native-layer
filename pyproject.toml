@@ -1,0 +1,19 @@
+[build-system]
+requires = ["scikit-build-core", "pybind11", "cmake"]
+build-backend = "scikit_build_core.build"
+
+[project]
+name = "native-layer"
+version = "0.1.0"
+description = "Zero-latency C++ tools for AI Agents"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "langchain==1.2.10",
+    "google-adk==1.25.0",
+    "pydantic"
+]
+
+[tool.scikit-build]
+# This tells the builder to put the compiled C++ extension INSIDE the python package
+wheel.install-dir = "native_layer"

@@ -3,6 +3,7 @@
 #include <string>
 #include <stdexcept>
 #include <memory>
+#include <iostream>
 
 #include "../include/plugin_manager.h" 
 #include "../include/watcher.h"
