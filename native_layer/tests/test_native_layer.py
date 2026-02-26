@@ -15,11 +15,11 @@ FUNC_ADD    = "add_arrays"
 # ── A. Import ────────────────────────────────────────────────────────────────
 class TestImport:
     def test_extension_importable(self):
-        import native_plugin_layer  # noqa: F401
+        import native_layer  # noqa: F401
 
     def test_manager_constructible(self):
-        import native_plugin_layer
-        assert native_plugin_layer.NativeManager() is not None
+        from native_layer import NativeManager
+        assert NativeManager() is not None
 
 
 # ── B. Plugin loading ────────────────────────────────────────────────────────
@@ -33,9 +33,9 @@ class TestPluginLoading:
             assert fn in schema
 
     def test_missing_dll_raises(self):
-        import native_plugin_layer
+        from native_layer import NativeManager
         with pytest.raises(Exception):
-            native_plugin_layer.NativeManager().load_plugin("x", "./missing.dll")
+            NativeManager().load_plugin("x", "./missing.dll")
 
 
 # ── C. f64 buffer — primary happy path ──────────────────────────────────────

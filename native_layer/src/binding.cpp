@@ -203,7 +203,7 @@ public:
     }
 };
 
-PYBIND11_MODULE(native_plugin_layer, m) {
+PYBIND11_MODULE(_core, m) {
     m.doc() = "LLM Agent Tool interface that lets you use compiled programming languages like C/C++/Rust/Zig etc with zero setup.";
 
     py::class_<NativeManagerWrapper>(m, "NativeManager")

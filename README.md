@@ -51,10 +51,7 @@ The host allocates inputs and passes them zero-copy to your plugin. Your plugin 
 **Initial setup:**
 
 ```python
-import sys
-sys.path.append("./native_layer/build/Release")
-
-from native_plugin_layer import NativeManager
+from native_layer import NativeManager
 from native_layer.adapters.langchain import NativeHotReloadMiddleware
 from langchain.agents import create_agent
 

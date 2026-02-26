@@ -15,28 +15,38 @@ execute_process(
 )
 
 # 3. Create the Python Module
-add_library(native_plugin_layer MODULE 
+add_library(_core MODULE 
     src/binding.cpp 
     src/plugin_manager.cpp
     src/watcher.cpp
 )
 # Strip the "lib" prefix so Python can import it directly by name
-set_target_properties(native_plugin_layer PROPERTIES PREFIX "")
+set_target_properties(_core PROPERTIES PREFIX "")
 
 # 4. Include Pybind11 and Python headers
-target_include_directories(native_plugin_layer PRIVATE 
+target_include_directories(_core PRIVATE 
     ${pybind11_INCLUDE_DIR}
     ${Python3_INCLUDE_DIRS}
 )
 
 # 5. Link Python libraries (Required for Windows MSVC)
-target_link_libraries(native_plugin_layer PRIVATE 
+target_link_libraries(_core PRIVATE 
     ${Python3_LIBRARIES}
+)
+
+# Output directly into the native_layer/ package dir so imports work without sys.path hacks
+set_target_properties(_core PROPERTIES
+    LIBRARY_OUTPUT_DIRECTORY         "${CMAKE_CURRENT_SOURCE_DIR}"
+    LIBRARY_OUTPUT_DIRECTORY_RELEASE "${CMAKE_CURRENT_SOURCE_DIR}"
+    LIBRARY_OUTPUT_DIRECTORY_DEBUG   "${CMAKE_CURRENT_SOURCE_DIR}"
+    RUNTIME_OUTPUT_DIRECTORY         "${CMAKE_CURRENT_SOURCE_DIR}"
+    RUNTIME_OUTPUT_DIRECTORY_RELEASE "${CMAKE_CURRENT_SOURCE_DIR}"
+    RUNTIME_OUTPUT_DIRECTORY_DEBUG   "${CMAKE_CURRENT_SOURCE_DIR}"
 )
 
 # Extension suffix for macOS/Windows compatibility
 if(APPLE)
-  set_target_properties(native_plugin_layer PROPERTIES SUFFIX ".so")
+  set_target_properties(_core PROPERTIES SUFFIX ".so")
 elseif(WIN32)
-  set_target_properties(native_plugin_layer PROPERTIES SUFFIX ".pyd")
+  set_target_properties(_core PROPERTIES SUFFIX ".pyd")
 endif()
