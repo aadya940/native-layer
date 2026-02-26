@@ -1,0 +1,1 @@
+Windows: cl /LD /EHsc /O2 plugin.cpp /Fe:plugin_simsimd.dll

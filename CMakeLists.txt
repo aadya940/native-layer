@@ -13,6 +13,10 @@ add_library(native_plugin_layer MODULE
     native_layer/src/watcher.cpp
 )
 
+if(MSVC)
+    target_compile_options(native_plugin_layer PRIVATE /std:c++17)
+endif()
+
 target_include_directories(native_plugin_layer PRIVATE
     native_layer/include
 )
@@ -25,6 +29,7 @@ target_link_libraries(native_plugin_layer PRIVATE
 set_target_properties(native_plugin_layer PROPERTIES
     PREFIX ""
     OUTPUT_NAME "native_plugin_layer"
+    SUFFIX ".pyd"
 )
 
 install(TARGETS native_plugin_layer DESTINATION .)
