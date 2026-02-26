@@ -6,7 +6,7 @@ Call native C/C++/Rust/Zig code directly from LLM agents. Drop a compiled plugin
 pip install .
 ```
 
----
+
 
 ## Why
 
@@ -14,7 +14,7 @@ Agent frameworks assume your tools are Python functions or HTTP endpoints. If yo
 
 Native Layer skips that. Any language that exports a C ABI works — Rust, Zig, C, C++. The agent calls your compiled code directly, zero-copy where possible.
 
----
+
 
 ## How it works
 
@@ -28,7 +28,7 @@ PluginAPI* get_plugin_api();
 
 Hot-reload is built in. Drop a new `.dll`/`.so` into the watched directory and the agent picks it up without restarting.
 
----
+
 
 ## Writing a plugin
 
@@ -88,7 +88,7 @@ extern "C" EXPORT PluginAPI* get_plugin_api() { return &api; }
 
 Compile to a shared library, drop it in your plugins directory. That's the entire integration.
 
----
+
 
 ## Using with an agent framework
 
@@ -132,26 +132,26 @@ agent = create_openai_tools_agent(llm, tools=[], prompt=prompt)
 executor = AgentExecutor(agent=agent, tools=[]).with_middleware(middleware)
 ```
 
----
+
 
 ## Supported frameworks
 
 | Framework | Adapter | Status |
-|---|---|---|
+||||
 | Google ADK ≥ 1.25.0 | `NativeADKToolset` | ✅ |
 | LangChain ≥ 1.0 | `NativeHotReloadMiddleware` | ✅ |
 | LlamaIndex | — | Planned |
 | OpenAI function calling | — | Planned |
 | Anthropic tool use | — | Planned |
 
----
+
 
 ## Type system
 
 The host marshals Python values into `MemoryBuffer` structs before calling your plugin. Buffer element dtype is detected automatically from the Python buffer's format string.
 
 | C type | `type_id` | Python side |
-|---|---|---|
+||||
 | `double[]` / `float[]` / `int64[]` | `TYPE_BUFFER` | `memoryview`, `array.array`, NumPy array |
 | `double` scalar | `TYPE_FLOAT` | `float` |
 | `int64_t` scalar | `TYPE_INT` | `int` |
@@ -160,19 +160,19 @@ The host marshals Python values into `MemoryBuffer` structs before calling your 
 
 `'d'` → F64, `'f'` → F32, `'q'` → I64.
 
----
+
 
 ## Platform support
 
 | Platform | Status | Notes |
-|---|---|---|
+||||
 | Windows x64 | ✅ Tested | MSVC, `.dll` |
 | Linux x64 | ✅ Should work | GCC/Clang, `.so` |
 | macOS | ⚠️ Untested | Clang, `.dylib`, expected to work |
 
 **Windows hot-reload caveat:** Windows locks loaded DLLs. The host copies the plugin to a shadow path before loading so replacement works, but there is a brief window where the old version is still live.
 
----
+
 
 ## Building from source
 
@@ -205,7 +205,7 @@ pip install langchain>=1.0 google-adk>=1.25.0 pybind11 pytest
 pytest
 ```
 
----
+
 
 ## Security
 
@@ -213,7 +213,7 @@ Plugins run in-process with full system access. There is no sandboxing, no code 
 
 Sandboxing is on the roadmap.
 
----
+
 
 ## Roadmap
 
@@ -222,13 +222,13 @@ Sandboxing is on the roadmap.
 - [ ] Zig plugin example
 - [ ] OpenAI and Anthropic adapters
 - [ ] Security 
----
+
 
 ## Contributing
 
 Issues and PRs welcome. If you build a plugin for something useful, open a PR to add it to the examples.
 
----
+
 
 ## License
 
