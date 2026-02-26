@@ -1,5 +1,6 @@
 #include "../include/plugin_layer.h"
 #include "../include/os.h"
+#include "../include/plugin_manager.h"
 
 #include <iostream>
 #include <unordered_map>

@@ -10,67 +10,108 @@ This opens the full native ecosystem to agentic tools, taking them as close to t
 
 Five functions, one struct, compile to a DLL.
 
-```c
+```cpp
 #include "native_layer/include/plugin_layer.h"
+#include <string.h>
+#include <stdlib.h>
 
+#ifdef _WIN32
+    #define EXPORT __declspec(dllexport)
+#else
+    #define EXPORT
+#endif
+
+// 1. JSON Schema (Raw String Literal)
 static const char* get_schema() {
-    return "{\"name\":\"fft\",\"description\":\"Fast Fourier Transform\","
-           "\"parameters\":{\"properties\":{"
-           "\"samples\":{\"type\":\"array\",\"items\":{\"type\":\"number\"}},"
-           "\"sample_rate\":{\"type\":\"number\"}}}}";
+    return R"({
+        "name": "fast_math",
+        "description": "High-performance vector operations.",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "vector": { "type": "array", "items": { "type": "number" } }
+            },
+            "required": ["vector"]
+        }
+    })";
 }
 
-static int initialize(const char* config) { return 0; }
-static void shutdown() {}
-
+// 2. Execution Logic
 static int execute(const char* fn, const MemoryBuffer* inputs, size_t n, MemoryBuffer* out) {
-    if (strcmp(fn, "fft") != 0) return -1;
+    if (strcmp(fn, "fast_math") != 0) return -1;
 
-    double* samples     = (double*)inputs[0].data;
-    size_t  num_samples = inputs[0].size / sizeof(double);
-    double  sample_rate = *(double*)inputs[1].data;
+    // Zero-copy access to Python memory
+    double* data = (double*)inputs[0].data;
+    size_t count = inputs[0].size / sizeof(double);
 
-    // ... your native computation ...
+    // Allocate result (Host calls free_buffer later)
+    double* result = (double*)malloc(count * sizeof(double));
+    
+    for(size_t i=0; i<count; i++) {
+        result[i] = data[i] * 2.0; // Example computation
+    }
 
-    out->data    = result;
-    out->size    = num_samples * sizeof(double);
+    out->data = result;
+    out->size = count * sizeof(double);
     out->type_id = TYPE_BUFFER;
+    out->dtype = DTYPE_F64;
     return 0;
 }
 
-static void free_buffer(MemoryBuffer* b) { free(b->data); b->data = NULL; }
+// 3. Cleanup
+static void free_buffer(MemoryBuffer* b) { free(b->data); }
 
-static PluginAPI api = { "signal", "1.0", get_schema, initialize, shutdown, execute, free_buffer };
-EXPORT PluginAPI* get_plugin_api() { return &api; }
+// 4. Lifecycle (Optional)
+static int init(const char* cfg) { return 0; }
+static void shut() {}
+
+// 5. Export Table
+static PluginAPI api = { "math_lib", "1.0", get_schema, init, shut, execute, free_buffer };
+extern "C" EXPORT PluginAPI* get_plugin_api() { return &api; }
 ```
 
 The host allocates inputs and passes them zero-copy to your plugin. Your plugin allocates the output; `free_buffer` is called by the host when it's done reading.
 
 ## How to use
 
-**Initial setup:**
+#### LangChain
 
 ```python
 from native_layer import NativeManager
 from native_layer.adapters.langchain import NativeHotReloadMiddleware
-from langchain.agents import create_agent
+from langchain.agents import AgentExecutor, create_openai_tools_agent
 
+# Initialize Manager & Watcher
 manager = NativeManager()
-manager.load_plugin("signal", "./libsignal.dll")
-
-middleware = NativeHotReloadMiddleware(manager)
-agent = create_agent(your_llm, middleware._get_live_tools())
-agent.invoke({"messages": [HumanMessage(content="run fft on this data")]})
-```
-
-**Hot reload** — drop a new DLL into a watched directory while the agent runs:
-
-```python
 manager.watch_directory("./plugins")
 
-# Copy libphysics.dll into ./plugins/ at any point.
-# It loads automatically under a readers-writer lock.
-# The LLM sees the new tool on the next turn — no restart needed.
+# Attach Middleware
+middleware = NativeHotReloadMiddleware(manager)
+
+# Create Agent: Tools list is empty, Middleware will handle the injection
+agent = create_openai_tools_agent(llm, tools=[], prompt=prompt)
+executor = AgentExecutor(agent=agent, tools=[]).with_middleware(middleware)
+
+# Invoke
+executor.invoke({"input": "Run fast_math on this array..."})
+```
+
+#### Google ADK
+
+```python
+from google.adk import Agent
+from native_layer import NativeManager
+from native_layer.adapters.adk import NativeADKToolset
+
+manager = NativeManager()
+manager.watch_directory("./plugins")
+
+agent = Agent(
+    model=model,
+    tools=[NativeADKToolset(manager)] # Tools are queried JIT
+)
+
+agent.run("Use the physics plugin to calculate trajectory.")
 ```
 
 ## Supported frameworks

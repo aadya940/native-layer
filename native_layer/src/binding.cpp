@@ -4,7 +4,7 @@
 #include <stdexcept>
 #include <memory>
 
-#include "plugin_manager.cpp" 
+#include "../include/plugin_manager.h" 
 #include "../include/watcher.h"
 
 namespace py = pybind11;
