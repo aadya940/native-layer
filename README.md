@@ -1,6 +1,6 @@
 # native-layer
 
-Call native C/C++/Rust/Zig code directly from LLM agents. Drop a compiled plugin into a directory, and the agent discovers and calls it at runtime — no FFI, no binding generators, no Python glue.
+Call native C/C++/Rust/Zig code directly from LLM agents. Drop a compiled plugin into a directory, and the agent discovers and calls it at runtime: no FFI, no binding generators, no Python glue.
 
 ```
 pip install .
