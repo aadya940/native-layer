@@ -1,3 +1,5 @@
+![CI](https://github.com/aadya940/native-layer/actions/workflows/ci.yml/badge.svg)
+
 # native-layer
 
 Call native C/C++/Rust/Zig code directly from LLM agents. Drop a compiled plugin into a directory, and the agent discovers and calls it at runtime: no FFI, no binding generators, no Python glue.
@@ -12,7 +14,7 @@ pip install .
 
 Agent frameworks assume your tools are Python functions or HTTP endpoints. If you have performance-critical code, hardware interfaces, or existing C/C++ libraries you want an agent to use, you're either rewriting them in Python or wrapping them in layers of FFI boilerplate.
 
-Native Layer skips that. Any language that exports a C ABI works — Rust, Zig, C, C++. The agent calls your compiled code directly, zero-copy where possible.
+Native Layer skips that. Any language that exports a C ABI works: Rust, Zig, C, C++. The agent calls your compiled code directly, zero-copy where possible.
 
 
 
@@ -166,40 +168,6 @@ The host marshals Python values into `MemoryBuffer` structs before calling your 
 | macOS | ⚠️ Untested | Clang, `.dylib`, expected to work |
 
 **Windows hot-reload caveat:** Windows locks loaded DLLs. The host copies the plugin to a shadow path before loading so replacement works, but there is a brief window where the old version is still live.
-
-
-
-## Building from source
-
-Requires Visual Studio 2019+ (MSVC), Python 3.10+, pybind11.
-
-**1. Build the Python extension** (x64 Native Tools Command Prompt):
-
-```
-cmake -S native_layer -B native_layer/build
-msbuild native_layer\build\AgentBridge.sln /p:Configuration=Release
-```
-
-**2. Build the example plugin:**
-
-```
-cl /LD /EHsc /std:c++17 native_layer\tests\plugins\libmath.cpp ^
-   /I native_layer\include ^
-   /Fe:native_layer\tests\plugins\libmath.dll
-```
-
-**3. Install Python dependencies:**
-
-```
-pip install langchain>=1.0 google-adk>=1.25.0 pybind11 pytest
-```
-
-**4. Run tests:**
-
-```
-pytest
-```
-
 
 
 ## Security
