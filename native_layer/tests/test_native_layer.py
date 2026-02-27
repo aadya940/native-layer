@@ -12,7 +12,6 @@ FUNC_SCALE  = "scale_array"
 FUNC_ADD    = "add_arrays"
 
 
-# ── A. Import ────────────────────────────────────────────────────────────────
 class TestImport:
     def test_extension_importable(self):
         import native_layer  # noqa: F401
@@ -22,7 +21,6 @@ class TestImport:
         assert NativeManager() is not None
 
 
-# ── B. Plugin loading ────────────────────────────────────────────────────────
 class TestPluginLoading:
     def test_schema_present(self, manager):
         assert len(manager.get_schema(PLUGIN_NAME)) > 0
@@ -38,7 +36,6 @@ class TestPluginLoading:
             NativeManager().load_plugin("x", "./missing.dll")
 
 
-# ── C. f64 buffer — primary happy path ──────────────────────────────────────
 class TestF64Buffer:
     @pytest.mark.parametrize("inp,expected", [
         ([1.0, 2.0, 3.0, 4.0], [2.0, 4.0, 6.0, 8.0]),
@@ -63,7 +60,6 @@ class TestF64Buffer:
         assert result[0] == 0.0 and result[999] == 1998.0
 
 
-# ── D. Dtype detection ───────────────────────────────────────────────────────
 class TestDtypeDetection:
     def test_f32_buffer_accepted(self, manager):
         """Bridge detects 'f' format — must not segfault regardless of plugin behaviour."""
@@ -79,7 +75,6 @@ class TestDtypeDetection:
         assert result is None or result == []
 
 
-# ── E. Multi-arg: scale_array(buffer, scalar) ────────────────────────────────
 class TestScaleArray:
     @pytest.mark.parametrize("inp,scalar,expected", [
         ([1.0, 2.0, 3.0], 3.0,  [3.0, 6.0, 9.0]),
@@ -98,7 +93,6 @@ class TestScaleArray:
             manager.execute(PLUGIN_NAME, FUNC_SCALE, [memoryview(data)])
 
 
-# ── F. Multi-arg: add_arrays(a, b) ──────────────────────────────────────────
 class TestAddArrays:
     @pytest.mark.parametrize("a,b,expected", [
         ([1.0, 2.0, 3.0], [4.0, 5.0, 6.0], [5.0, 7.0, 9.0]),
@@ -127,7 +121,6 @@ class TestAddArrays:
             manager.execute(PLUGIN_NAME, FUNC_ADD, [memoryview(array.array('d', [1.0]))])
 
 
-# ── G. Error paths ──────────────────────────────────────────────────────────
 class TestErrorPaths:
     def test_unknown_function_raises(self, manager):
         with pytest.raises(RuntimeError):
@@ -142,12 +135,11 @@ class TestErrorPaths:
             manager.execute(PLUGIN_NAME, FUNC_DOUBLE, [])
 
 
-# ── H. _to_native / _py_annotation helpers ──────────────────────────────────
 class TestHelpers:
     @pytest.fixture(autouse=True)
     def _import(self):
-        from native_layer.adapters.adk import _to_native, _py_annotation, _array_typecode
-        self.N, self.A, self.T = _to_native, _py_annotation, _array_typecode
+        from native_layer.adapters.adk import _to_native, _py_type, _array_typecode
+        self.N, self.A, self.T = _to_native, _py_type, _array_typecode
 
     @pytest.mark.parametrize("schema,code", [
         ({},                        'd'),
@@ -197,7 +189,6 @@ class TestHelpers:
         assert self.A({'type': 'array', 'items': {'type': 'integer'}}) == List[int]
 
 
-# ── I. LangChain Pydantic model builder ──────────────────────────────────────
 class TestPydanticModelBuilder:
     @pytest.fixture(autouse=True)
     def _mw(self):

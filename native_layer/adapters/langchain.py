@@ -6,7 +6,7 @@ from langchain_core.tools import StructuredTool
 from langchain.agents.middleware import AgentMiddleware, ModelRequest
 from langchain.agents.middleware.types import ModelResponse
 
-from .adk import _to_native, _py_annotation
+from .adk import _to_native, _py_type
 
 logger = logging.getLogger(__name__)
 
@@ -29,7 +29,7 @@ class NativeHotReloadMiddleware(AgentMiddleware):
         """Dynamically builds a Pydantic model from the C++ JSON schema properties."""
         fields: dict[str, Any] = {}
         for arg_name, arg_schema in parameters.get("properties", {}).items():
-            py_type = _py_annotation(arg_schema)
+            py_type = _py_type(arg_schema)
             fields[arg_name] = (py_type, ...)
         return create_model(f"{tool_name}_schema", **fields)
 
