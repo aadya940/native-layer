@@ -26,9 +26,17 @@ target_link_libraries(native_plugin_layer PRIVATE
     Python::Module
 )
 
-set_target_properties(native_plugin_layer PROPERTIES
-    PREFIX ""
-    OUTPUT_NAME "native_plugin_layer"
-)
+if(WIN32)
+    set_target_properties(native_plugin_layer PROPERTIES
+        PREFIX ""
+        OUTPUT_NAME "native_plugin_layer"
+        SUFFIX ".pyd"
+    )
+else()
+    set_target_properties(native_plugin_layer PROPERTIES
+        PREFIX ""
+        OUTPUT_NAME "native_plugin_layer"
+    )
+endif()
 
 install(TARGETS native_plugin_layer DESTINATION .)
