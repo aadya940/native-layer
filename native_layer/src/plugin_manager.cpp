@@ -2,6 +2,7 @@
 #include "../include/os.h"
 
 #include <iostream>
+#include <mutex>
 #include <stdexcept>
 
 PluginManager::~PluginManager() {
