@@ -29,7 +29,6 @@ target_link_libraries(native_plugin_layer PRIVATE
 set_target_properties(native_plugin_layer PROPERTIES
     PREFIX ""
     OUTPUT_NAME "native_plugin_layer"
-    SUFFIX ".pyd"
 )
 
 install(TARGETS native_plugin_layer DESTINATION .)
