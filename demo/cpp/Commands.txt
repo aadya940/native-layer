@@ -1,1 +1,4 @@
 Windows: cl /LD /EHsc /O2 plugin.cpp /Fe:plugin_simsimd.dll
+Linux (g++): g++ -shared -fPIC -O2 -std=c++17 plugin.cpp -o plugin_simsimd.so
+Linux (clang): clang++ -shared -fPIC -O2 -std=c++17 plugin.cpp -o plugin_simsimd.so
+MacOS: clang++ -shared -fPIC -O2 -std=c++17 -undefined dynamic_lookup plugin.cpp -o plugin_simsimd.dylib
