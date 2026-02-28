@@ -103,16 +103,10 @@ public:
         };
 
         // Drop the GIL and execute C++.
-        try {
-            py::gil_scoped_release release;
-            manager.execute(plugin, func,
-                            mem_bufs.data(), mem_bufs.size(),
-                            &output_buf);
-        } catch (...) {
-            manager.free_buffer(plugin, &output_buf);
-            free_inputs();
-            throw;
-        }
+        py::gil_scoped_release release;
+        manager.execute(plugin, func,
+                        mem_bufs.data(), mem_bufs.size(),
+                        &output_buf);
 
         // Decode the output back to Python.
         py::object result = py::none();

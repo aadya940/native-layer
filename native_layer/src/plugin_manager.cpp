@@ -5,6 +5,28 @@
 #include <mutex>
 #include <stdexcept>
 
+namespace {
+    template<typename Func>
+    auto safe_execute(const std::string& plugin_name, const std::string& operation, Func&& func) -> decltype(func()) {
+        try {
+            return func();
+        } catch (const std::exception& e) {
+            std::cerr << "Exception " << operation << " for plugin '" << plugin_name << "': " << e.what() << std::endl;
+            return decltype(func()){};
+        } catch (...) {
+            std::cerr << "Unknown exception " << operation << " for plugin '" << plugin_name << "'" << std::endl;
+            return decltype(func()){};
+        }
+    }
+    
+    void reset_output_buffer(MemoryBuffer* output) {
+        output->data = nullptr;
+        output->size = 0;
+        output->type_id = TYPE_UNKNOWN;
+        output->dtype = DTYPE_F64;
+    }
+}
+
 PluginManager::~PluginManager() {
     std::unique_lock lock(rw_lock);
     for (auto& pair: plugins){
@@ -55,12 +77,19 @@ void PluginManager::execute(const std::string& plugin_name,
     
     auto it = plugins.find(plugin_name);
     if (it == plugins.end()) {
-        throw std::invalid_argument("Plugin not found: " + plugin_name);
+        std::cerr << "Plugin not found: " << plugin_name << std::endl;
+        reset_output_buffer(output);
+        return;
     }
 
-    int status = it->second.api->execute(function_name.c_str(), inputs, num_inputs, output);
+    int status = safe_execute(plugin_name, "executing function '" + function_name + "'", [&]() {
+        return it->second.api->execute(function_name.c_str(), inputs, num_inputs, output);
+    });
+    
     if (status != 0) {
-        throw std::runtime_error("C++ plugin execution failed with status: " + std::to_string(status));
+        std::cerr << "C++ plugin execution failed with status " << status 
+                  << " for plugin '" << plugin_name << " function '" << function_name << "'" << std::endl;
+        reset_output_buffer(output);
     }
 }
 
@@ -68,9 +97,13 @@ std::string PluginManager::get_schema(const std::string& plugin_name) const {
     std::shared_lock lock(rw_lock);
     auto it = plugins.find(plugin_name);
     if (it == plugins.end()) {
-        throw std::invalid_argument("Plugin not found: " + plugin_name);
+        std::cerr << "Plugin not found for schema: " << plugin_name << std::endl;
+        return "{}";
     }
-    return std::string(it->second.api->get_schema());
+    
+    return safe_execute(plugin_name, "getting schema", [&]() {
+        return std::string(it->second.api->get_schema());
+    });
 }
 
 std::vector<std::string> PluginManager::get_loaded_plugins() const {
@@ -87,6 +120,9 @@ void PluginManager::free_buffer(const std::string& plugin_name, MemoryBuffer* bu
     std::shared_lock lock(rw_lock);
     auto it = plugins.find(plugin_name);
     if (it != plugins.end() && buffer->data != nullptr) {
-        it->second.api->free_buffer(buffer);
+        safe_execute(plugin_name, "freeing buffer", [&]() {
+            it->second.api->free_buffer(buffer);
+            return void();
+        });
     }
 }
