@@ -7,15 +7,23 @@
 
 namespace {
     template<typename Func>
-    auto safe_execute(const std::string& plugin_name, const std::string& operation, Func&& func) -> decltype(func()) {
+    auto safe_execute(const std::string& plugin_name, const std::string& operation, Func&& func) {
         try {
             return func();
         } catch (const std::exception& e) {
             std::cerr << "Exception " << operation << " for plugin '" << plugin_name << "': " << e.what() << std::endl;
-            return decltype(func()){};
+            if constexpr (std::is_void_v<decltype(func())>) {
+                return;
+            } else {
+                return decltype(func()){};
+            }
         } catch (...) {
             std::cerr << "Unknown exception " << operation << " for plugin '" << plugin_name << "'" << std::endl;
-            return decltype(func()){};
+            if constexpr (std::is_void_v<decltype(func())>) {
+                return;
+            } else {
+                return decltype(func()){};
+            }
         }
     }
     
@@ -122,7 +130,6 @@ void PluginManager::free_buffer(const std::string& plugin_name, MemoryBuffer* bu
     if (it != plugins.end() && buffer->data != nullptr) {
         safe_execute(plugin_name, "freeing buffer", [&]() {
             it->second.api->free_buffer(buffer);
-            return void();
         });
     }
 }
