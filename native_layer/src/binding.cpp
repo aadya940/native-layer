@@ -4,6 +4,7 @@
 #include <stdexcept>
 #include <memory>
 #include <iostream>
+ #include <cstring>
 
 #include "../include/plugin_manager.h" 
 #include "../include/watcher.h"
@@ -52,11 +53,23 @@ public:
 
             if (py::isinstance<py::buffer>(arg)) {
                 buf_infos[i] = arg.cast<py::buffer>().request();
-                mb.data    = buf_infos[i].ptr;
-                mb.size    = buf_infos[i].size * buf_infos[i].itemsize;
                 mb.type_id = TYPE_BUFFER;
-                mb.dtype   = dtype_from_format(buf_infos[i].format);
-                // Python owns the memory — do NOT delete.
+
+                if (buf_infos[i].format == "f") {
+                    size_t n = static_cast<size_t>(buf_infos[i].size);
+                    auto* converted = new double[n];
+                    auto* src = static_cast<const float*>(buf_infos[i].ptr);
+                    for (size_t j = 0; j < n; ++j) converted[j] = static_cast<double>(src[j]);
+                    mb.data  = converted;
+                    mb.size  = n * sizeof(double);
+                    mb.dtype = DTYPE_F64;
+                    host_owned[i] = true;
+                } else {
+                    mb.data  = buf_infos[i].ptr;
+                    mb.size  = buf_infos[i].size * buf_infos[i].itemsize;
+                    mb.dtype = dtype_from_format(buf_infos[i].format);
+                    // Python owns the memory — do NOT delete.
+                }
             }
             else if (py::isinstance<py::str>(arg)) {
                 std::string s = arg.cast<std::string>();
@@ -95,6 +108,8 @@ public:
                 if (!host_owned[i]) continue;
                 if (mem_bufs[i].type_id == TYPE_STRING)
                     delete[] static_cast<char*>(mem_bufs[i].data);
+                else if (mem_bufs[i].type_id == TYPE_BUFFER)
+                    delete[] static_cast<double*>(mem_bufs[i].data);
                 else if (mem_bufs[i].type_id == TYPE_INT)
                     delete static_cast<int64_t*>(mem_bufs[i].data);
                 else if (mem_bufs[i].type_id == TYPE_FLOAT)
@@ -103,10 +118,16 @@ public:
         };
 
         // Drop the GIL and execute C++.
-        py::gil_scoped_release release;
-        manager.execute(plugin, func,
-                        mem_bufs.data(), mem_bufs.size(),
-                        &output_buf);
+        try {
+            py::gil_scoped_release release;
+            manager.execute(plugin, func,
+                            mem_bufs.data(), mem_bufs.size(),
+                            &output_buf);
+        } catch (...) {
+            manager.free_buffer(plugin, &output_buf);
+            free_inputs();
+            throw;
+        }
 
         // Decode the output back to Python.
         py::object result = py::none();

@@ -4,6 +4,7 @@
 #include <iostream>
 #include <mutex>
 #include <stdexcept>
+#include <type_traits>
 
 namespace {
     template<typename Func>
