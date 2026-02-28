@@ -11,18 +11,28 @@ namespace {
         try {
             return func();
         } catch (const std::exception& e) {
-            std::cerr << "Exception " << operation << " for plugin '" << plugin_name << "': " << e.what() << std::endl;
+            std::cerr << "C++ CRASH " << operation << " for plugin '" << plugin_name << "': " << e.what() << std::endl;
             if constexpr (std::is_void_v<decltype(func())>) {
                 return;
             } else {
-                return decltype(func()){};
+                // Return a special error value that indicates a C++ crash
+                if constexpr (std::is_same_v<decltype(func()), int>) {
+                    return -999; // Special error code for C++ crashes
+                } else {
+                    return decltype(func()){};
+                }
             }
         } catch (...) {
-            std::cerr << "Unknown exception " << operation << " for plugin '" << plugin_name << "'" << std::endl;
+            std::cerr << "C++ CRASH " << operation << " for plugin '" << plugin_name << "'" << std::endl;
             if constexpr (std::is_void_v<decltype(func())>) {
                 return;
             } else {
-                return decltype(func()){};
+                // Return a special error value that indicates a C++ crash
+                if constexpr (std::is_same_v<decltype(func()), int>) {
+                    return -999; // Special error code for C++ crashes
+                } else {
+                    return decltype(func()){};
+                }
             }
         }
     }
@@ -85,19 +95,22 @@ void PluginManager::execute(const std::string& plugin_name,
     
     auto it = plugins.find(plugin_name);
     if (it == plugins.end()) {
-        std::cerr << "Plugin not found: " << plugin_name << std::endl;
-        reset_output_buffer(output);
-        return;
+        throw std::invalid_argument("Plugin not found: " + plugin_name);
     }
 
     int status = safe_execute(plugin_name, "executing function '" + function_name + "'", [&]() {
         return it->second.api->execute(function_name.c_str(), inputs, num_inputs, output);
     });
     
-    if (status != 0) {
-        std::cerr << "C++ plugin execution failed with status " << status 
-                  << " for plugin '" << plugin_name << " function '" << function_name << "'" << std::endl;
+    if (status == -999) {
+        // C++ crash occurred - return safe result instead of crashing Python
         reset_output_buffer(output);
+        return;
+    }
+    
+    if (status != 0) {
+        throw std::runtime_error("C++ plugin execution failed with status " + std::to_string(status) +
+                                 " for plugin '" + plugin_name + "' function '" + function_name + "'");
     }
 }
 
