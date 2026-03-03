@@ -10,11 +10,14 @@ pip install .
 
 
 
-## Why
+### Why
+Most agent frameworks assume tools are Python functions or HTTP endpoints. If you want an agent to use performance-critical code, hardware interfaces, or existing C/C++ libraries, you end up either rewriting them in Python or maintaining a pile of one-off FFI glue and serialization.
 
-Agent frameworks assume your tools are Python functions or HTTP endpoints. If you have performance-critical code, hardware interfaces, or existing C/C++ libraries you want an agent to use, you're either rewriting them in Python or wrapping them in layers of FFI boilerplate.
+Native Layer standardizes that interface. Tools are compiled plugins that expose a stable C ABI (Rust/Zig/C/C++ all work). The agent can call native code in-process, avoiding network hops, and using zero-copy buffers when possible (e.g., numeric arrays / tensors), with safe fallbacks for complex types.
 
-Native Layer skips that. Any language that exports a C ABI works: Rust, Zig, C, C++. The agent calls your compiled code directly, zero-copy where possible.
+Long term, agents will move closer to the hardware robotics stacks, SIMD-heavy inference, OS-adjacent tooling where latency, memory copies, and system integration matter. Native Layer borrows from OS device-driver design: self-describing plugins + function pointer tables as the core contract.
+
+MCP is excellent when tools are remote or need to be language-agnostic over the network. Native Layer is optimized for local, hardware-adjacent, low-latency agent tooling where network calls and repeated serialization are the bottleneck.
 
 
 
