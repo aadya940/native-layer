@@ -31,7 +31,6 @@ extern "C" {
 
 /* Memory Buffer is the C-Struct to implement zero copy interface
    with C style alignment across all compilers. */
-
 typedef struct {
     void*    data;      // Raw pointer to the physical memory address.
     size_t   size;      // Size of the buffer in bytes.
@@ -69,7 +68,6 @@ typedef struct {
 } PluginAPI;
 
 // Export
-
 /**
  * Every compiled .so file MUST export this exact symbol.
  * The host manager will call this to retrieve the function pointer table.
