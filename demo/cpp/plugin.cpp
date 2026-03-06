@@ -13,6 +13,7 @@ the cosine similarity of two vectors using an AI Agent.
 
 #include <string.h>
 #include <stdlib.h>
+ #include <vector>
 
 #ifdef _WIN32
     #define EXPORT __declspec(dllexport)
@@ -27,8 +28,8 @@ static const char* get_schema() {
         "parameters": {
             "type": "object",
             "properties": {
-                "vec_a": { "type": "array", "items": { "type": "number" } },
-                "vec_b": { "type": "array", "items": { "type": "number" } }
+                "vec_a": { "type": "array", "items": { "type": "number", "format": "float32" } },
+                "vec_b": { "type": "array", "items": { "type": "number", "format": "float32" } }
             },
             "required": ["vec_a", "vec_b"]
         }
@@ -38,10 +39,35 @@ static const char* get_schema() {
 static int execute(const char* fn, const MemoryBuffer* inputs, size_t n, MemoryBuffer* out) {
     if (strcmp(fn, "cosine_similarity") != 0) return -1;
 
-    // 1. Cast Input Pointers
-    simsimd_f32_t* a = (simsimd_f32_t*)inputs[0].data;
-    simsimd_f32_t* b = (simsimd_f32_t*)inputs[1].data;
-    size_t dim = inputs[0].size / sizeof(float);
+    // 1. Cast/convert input pointers.
+    // The host bridge may pass float32 buffers (DTYPE_F32) or converted float64 buffers (DTYPE_F64).
+    const bool a_is_f64 = inputs[0].dtype == DTYPE_F64;
+    const bool b_is_f64 = inputs[1].dtype == DTYPE_F64;
+
+    size_t dim = a_is_f64 ? (inputs[0].size / sizeof(double)) : (inputs[0].size / sizeof(float));
+
+    simsimd_f32_t* a = nullptr;
+    simsimd_f32_t* b = nullptr;
+    simsimd_f32_t* a_tmp = nullptr;
+    simsimd_f32_t* b_tmp = nullptr;
+
+    if (a_is_f64) {
+        const double* src = (const double*)inputs[0].data;
+        a_tmp = (simsimd_f32_t*)malloc(dim * sizeof(simsimd_f32_t));
+        for (size_t i = 0; i < dim; ++i) a_tmp[i] = (simsimd_f32_t)src[i];
+        a = a_tmp;
+    } else {
+        a = (simsimd_f32_t*)inputs[0].data;
+    }
+
+    if (b_is_f64) {
+        const double* src = (const double*)inputs[1].data;
+        b_tmp = (simsimd_f32_t*)malloc(dim * sizeof(simsimd_f32_t));
+        for (size_t i = 0; i < dim; ++i) b_tmp[i] = (simsimd_f32_t)src[i];
+        b = b_tmp;
+    } else {
+        b = (simsimd_f32_t*)inputs[1].data;
+    }
 
     simsimd_distance_t distance;
     simsimd_cos_f32_serial(a, b, dim, &distance);
@@ -56,6 +82,9 @@ static int execute(const char* fn, const MemoryBuffer* inputs, size_t n, MemoryB
     out->size = sizeof(double);
     out->type_id = TYPE_FLOAT;
     out->dtype = DTYPE_F64;
+
+    if (a_tmp) free(a_tmp);
+    if (b_tmp) free(b_tmp);
     return 0;
 }
 
