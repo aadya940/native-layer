@@ -1,0 +1,10 @@
+Build (release):
+  cargo build --release
+
+Output artifact (typically):
+- Windows: target\\release\\plugin_rust.dll
+- macOS: target/release/libplugin_rust.dylib
+- Linux: target/release/libplugin_rust.so
+
+Run demo:
+  python agent_langchain.py
