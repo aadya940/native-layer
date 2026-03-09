@@ -175,10 +175,8 @@ Sandboxing is on the roadmap.
 
 ## Roadmap
 
-- [ ] macOS testing and CI
-- [ ] Rust plugin example and SDK
 - [ ] Zig plugin example
-- [ ] OpenAI and Anthropic adapters
+- [ ] Multi-Agent and Multi-Language Tools Example
 - [ ] Security 
 
 
