@@ -11,7 +11,7 @@ pip install .
 
 
 ### Why
-Most agent frameworks assume tools are Python functions or HTTP endpoints. If you want an agent to use performance-critical code, hardware interfaces, or existing C/C++ libraries, you end up either rewriting them in Python or maintaining a pile of one-off FFI glue and serialization.
+Most agent frameworks assume tools are Python functions or HTTP endpoints. If you want an agent to use performance-critical code, hardware interfaces, or existing C/C++/Rust/Zig libraries, you end up either rewriting them in Python or maintaining a pile of one-off FFI glue and serialization.
 
 Native Layer standardizes that interface. Tools are compiled plugins that expose a stable C ABI (Rust/Zig/C/C++ all work). The agent can call native code in-process, avoiding network hops, and using zero-copy buffers when possible (e.g., numeric arrays / tensors), with safe fallbacks for complex types.
 
