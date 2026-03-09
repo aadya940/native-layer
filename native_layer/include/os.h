@@ -7,6 +7,7 @@
 #ifdef _WIN32
     #include <windows.h>
 #else
+    #include <dlfcn.h>
     #include <sys/mman.h>
     #include <sys/wait.h>
     #include <unistd.h>
@@ -191,7 +192,5 @@ inline ProcessResult run_isolated(std::function<int()> exec) {
 }
 
 #endif
-
-}
 
 } // namespace OS
