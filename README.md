@@ -39,12 +39,6 @@ Hot-reload is built in. Drop a new `.dll`/`.so` into the watched directory and t
 #include <string.h>
 #include <stdlib.h>
 
-#ifdef _WIN32
-    #define EXPORT __declspec(dllexport)
-#else
-    #define EXPORT
-#endif
-
 static const char* get_schema() {
     return R"({
         "name": "fast_math",
