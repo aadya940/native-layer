@@ -162,9 +162,6 @@ The host marshals Python values into `MemoryBuffer` structs before calling your 
 | Linux x64 | ✅ Should work | GCC/Clang, `.so` |
 | macOS | ⚠️ Untested | Clang, `.dylib`, expected to work |
 
-**Windows hot-reload caveat:** Windows locks loaded DLLs. The host copies the plugin to a shadow path before loading so replacement works, but there is a brief window where the old version is still live.
-
-
 ## Security
 
 Plugins run in-process and have full system access.
