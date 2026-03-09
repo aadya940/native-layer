@@ -86,33 +86,95 @@ void PluginManager::load_plugin(const std::string& plugin_name, const std::strin
     std::cout << "Loaded native plugin: " << api->name << " v" << api->version << std::endl;
 }
 
-void PluginManager::execute(const std::string& plugin_name, 
-                 const std::string& function_name, 
-                 const MemoryBuffer* inputs, 
-                 size_t num_inputs, 
-                 MemoryBuffer* output) {
-                      
-    std::shared_lock lock(rw_lock);
-    
-    auto it = plugins.find(plugin_name);
-    if (it == plugins.end()) {
-        throw std::invalid_argument("Plugin not found: " + plugin_name);
-    }
+void PluginManager::execute(
+    const std::string& plugin_name,
+    const std::string& function_name,
+    const MemoryBuffer* inputs,
+    size_t num_inputs,
+    MemoryBuffer* output
+) {
 
-    int status = safe_execute(plugin_name, "executing function '" + function_name + "'", [&]() {
-        return it->second.api->execute(function_name.c_str(), inputs, num_inputs, output);
-    });
-    
-    if (status == -999) {
-        // C++ crash occurred - return safe result instead of crashing Python
+    std::shared_lock lock(rw_lock);
+
+    auto it = plugins.find(plugin_name);
+    if (it == plugins.end())
+        throw std::invalid_argument("Plugin not found: " + plugin_name);
+
+#ifndef _WIN32
+
+    uint32_t type_id = TYPE_UNKNOWN;
+    uint32_t dtype   = DTYPE_F64;
+
+    std::vector<char> result_buffer(OS::SHM_MAX_SIZE);
+    size_t result_size = 0;
+
+    auto res = OS::run_isolated(
+        [&](void* shm_data, size_t& size) {
+
+            MemoryBuffer child_out{};
+
+            int status = it->second.api->execute(
+                function_name.c_str(),
+                inputs,
+                num_inputs,
+                &child_out
+            );
+
+            if (status != 0)
+                return status;
+
+            if (child_out.size > OS::SHM_MAX_SIZE)
+                return -2;
+
+            memcpy(shm_data, child_out.data, child_out.size);
+
+            size = child_out.size;
+            type_id = child_out.type_id;
+            dtype   = child_out.dtype;
+
+            it->second.api->free_buffer(&child_out);
+
+            return 0;
+        },
+        result_buffer.data(),
+        result_size,
+        type_id,
+        dtype
+    );
+
+    if (res.crashed) {
+        std::cerr << "Plugin crashed: " << plugin_name << std::endl;
         reset_output_buffer(output);
         return;
     }
-    
-    if (status != 0) {
-        throw std::runtime_error("C++ plugin execution failed with status " + std::to_string(status) +
-                                 " for plugin '" + plugin_name + "' function '" + function_name + "'");
+
+    if (res.exit_code != 0) {
+        throw std::runtime_error(
+            "Plugin execution failed: " + std::to_string(res.exit_code)
+        );
     }
+
+    void* data = malloc(result_size);
+    memcpy(data, result_buffer.data(), result_size);
+
+    output->data = data;
+    output->size = result_size;
+    output->type_id = type_id;
+    output->dtype = dtype;
+
+#else
+
+    int status = it->second.api->execute(
+        function_name.c_str(),
+        inputs,
+        num_inputs,
+        output
+    );
+
+    if (status != 0)
+        throw std::runtime_error("Plugin execution failed");
+
+#endif
 }
 
 std::string PluginManager::get_schema(const std::string& plugin_name) const {

@@ -167,9 +167,16 @@ The host marshals Python values into `MemoryBuffer` structs before calling your 
 
 ## Security
 
-Plugins run in-process with full system access. There is no sandboxing, no code signing, and no permission model. Only load plugins you compiled yourself or fully trust. This is the same tradeoff as any shared library loaded at runtime.
+Plugins run in-process and have full system access.
 
-Sandboxing is on the roadmap.
+The runtime includes **crash protection** so that plugin segmentation faults do not terminate the agent process. However, plugins are not sandboxed and may still perform arbitrary operations.
+
+Only load plugins you trust.
+
+Future versions will explore:
+- plugin code signing
+- sandboxed execution
+- permission models
 
 
 
