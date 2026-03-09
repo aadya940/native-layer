@@ -98,7 +98,7 @@ struct ShmHeader {
     uint32_t dtype;
 };
 
-constexpr size_t SHM_MAX_SIZE = 100 * 1024 * 1024; // 100MB
+constexpr size_t SHM_MAX_SIZE = 1000 * 1024 * 1024; // 1GB
 
 inline ProcessResult run_isolated(
     std::function<int(void*, size_t&)> child_exec,
