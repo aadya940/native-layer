@@ -175,20 +175,29 @@ inline ProcessResult run_isolated(
 
 #else
 
-inline ProcessResult run_isolated(std::function<int()> exec) {
+struct IsolatedExec {
+    std::function<int()>* fn;
+    static int call(void* ctx) {
+        return (*static_cast<IsolatedExec*>(ctx)->fn)();
+    }
+};
 
+static ProcessResult run_isolated_seh(int(*exec)(void*), void* ctx) {
     ProcessResult result;
-
     __try {
-        result.exit_code = exec();
+        result.exit_code = exec(ctx);
         result.crashed = false;
     }
     __except (EXCEPTION_EXECUTE_HANDLER) {
         result.exit_code = -1;
         result.crashed = true;
     }
-
     return result;
+}
+
+inline ProcessResult run_isolated(std::function<int()> exec) {
+    IsolatedExec ctx{ &exec };
+    return run_isolated_seh(&IsolatedExec::call, &ctx);
 }
 
 #endif
