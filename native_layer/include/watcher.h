@@ -1,29 +1,32 @@
-/* Watches the filesystem for changes in the plugin directory and reloads plugins automatically. */
 #pragma once
 
 #include <string>
 #include <functional>
-#include <atomic>
-#include <thread>
+#include <memory>
+#include <efsw/efsw.hpp>
 
-class DirectoryWatcher {
-private:
-    std::string directory;
-    std::atomic<bool> running;
-    std::thread watcher_thread;
-    
-    // The callback fired when a shadow copy is ready
-    std::function<void(const std::string& plugin_name, const std::string& shadow_path)> on_file_ready;
-
-    void monitor_loop();
-    std::string create_shadow_copy(const std::string& original_path);
-
+class DirectoryWatcher : public efsw::FileWatchListener {
 public:
-    DirectoryWatcher(const std::string& dir, 
+    DirectoryWatcher(const std::string& dir,
                      std::function<void(const std::string&, const std::string&)> callback);
+
     ~DirectoryWatcher();
 
     void start();
     void stop();
-};
 
+private:
+    std::string directory;
+    std::function<void(const std::string&, const std::string&)> on_file_ready;
+
+    std::unique_ptr<efsw::FileWatcher> watcher;
+    efsw::WatchID watch_id;
+
+    std::string create_shadow_copy(const std::string& original_path);
+
+    void handleFileAction(efsw::WatchID watchid,
+                          const std::string& dir,
+                          const std::string& filename,
+                          efsw::Action action,
+                          std::string oldFilename) override;
+};
