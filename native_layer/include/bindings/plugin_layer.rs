@@ -47,4 +47,6 @@ pub struct PluginAPI {
     pub free_buffer: Option<FreeBufferFn>,
 }
 
+unsafe impl Sync for PluginAPI {}
+
 pub type GetPluginAPIFunc = unsafe extern "C" fn() -> *mut PluginAPI;

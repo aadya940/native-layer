@@ -29,10 +29,8 @@ async def main():
     # Synchronize C++ Toolset
     print("Synchronizing C++ Toolset. Verifying plugin_simsimd.dll...")
 
-    for _ in range(30):
-        if manager.get_active_tools():
-            break
-        await asyncio.sleep(0.2)
+    # Give the manager a moment to process the copy.
+    await asyncio.sleep(0.2)
     
     active_tools = manager.get_active_tools()
     if not active_tools:
