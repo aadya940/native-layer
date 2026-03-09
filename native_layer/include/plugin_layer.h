@@ -11,6 +11,13 @@
 extern "C" {
 #endif
 
+
+#ifdef _WIN32
+    #define EXPORT __declspec(dllexport)
+#else
+    #define EXPORT
+#endif
+
 /* Type Definitions
    These will be used to cast void* pointer to the appropriate type.
 */
