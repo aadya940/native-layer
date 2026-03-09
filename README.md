@@ -19,7 +19,7 @@ Long term, agents will move closer to the hardware robotics stacks, SIMD-heavy i
 
 MCP is excellent when tools are remote or need to be language-agnostic over the network. Native Layer is optimized for local, hardware-adjacent, low-latency agent tooling where network calls and repeated serialization are the bottleneck.
 
-
+Also, hot reloading gives the ability to an AI Agent to write and register its own tools at runtime.
 
 ## How it works
 
