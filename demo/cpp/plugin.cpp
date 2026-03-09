@@ -13,13 +13,7 @@ the cosine similarity of two vectors using an AI Agent.
 
 #include <string.h>
 #include <stdlib.h>
- #include <vector>
-
-#ifdef _WIN32
-    #define EXPORT __declspec(dllexport)
-#else
-    #define EXPORT
-#endif
+#include <vector>
 
 static const char* get_schema() {
     return R"({
