@@ -86,34 +86,55 @@ void PluginManager::load_plugin(const std::string& plugin_name, const std::strin
     std::cout << "Loaded native plugin: " << api->name << " v" << api->version << std::endl;
 }
 
-void PluginManager::execute(const std::string& plugin_name, 
-                 const std::string& function_name, 
-                 const MemoryBuffer* inputs, 
-                 size_t num_inputs, 
+void PluginManager::execute(const std::string& plugin_name,
+                 const std::string& function_name,
+                 const MemoryBuffer* inputs,
+                 size_t num_inputs,
                  MemoryBuffer* output) {
-                      
+
     std::shared_lock lock(rw_lock);
-    
+
     auto it = plugins.find(plugin_name);
     if (it == plugins.end()) {
         throw std::invalid_argument("Plugin not found: " + plugin_name);
     }
 
-    int status = safe_execute(plugin_name, "executing function '" + function_name + "'", [&]() {
-        return it->second.api->execute(function_name.c_str(), inputs, num_inputs, output);
-    });
-    
-    if (status == -999) {
-        // C++ crash occurred - return safe result instead of crashing Python
+    auto result = safe_execute(plugin_name,
+        "executing function '" + function_name + "'",
+        [&]() {
+
+            auto r = OS::run_isolated([&]() {
+                return it->second.api->execute(
+                    function_name.c_str(),
+                    inputs,
+                    num_inputs,
+                    output
+                );
+            });
+
+            if (r.crashed) {
+                return -999;
+            }
+
+            return r.exit_code;
+        });
+
+    if (result == -999) {
+        std::cerr << "Plugin crashed: " << plugin_name << std::endl;
         reset_output_buffer(output);
         return;
     }
-    
-    if (status != 0) {
-        throw std::runtime_error("C++ plugin execution failed with status " + std::to_string(status) +
-                                 " for plugin '" + plugin_name + "' function '" + function_name + "'");
+
+    if (result != 0) {
+        throw std::runtime_error(
+            "C++ plugin execution failed with status " +
+            std::to_string(result) +
+            " for plugin '" + plugin_name +
+            "' function '" + function_name + "'"
+        );
     }
 }
+
 
 std::string PluginManager::get_schema(const std::string& plugin_name) const {
     std::shared_lock lock(rw_lock);
