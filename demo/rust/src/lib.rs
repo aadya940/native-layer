@@ -115,6 +115,8 @@ extern "C" fn execute(
             (*output).size = out.len();
             (*output).type_id = TYPE_STRING;
             (*output).dtype = DTYPE_BYTES;
+            (*output).shape = std::ptr::null_mut();
+            (*output).ndim = 0;
         }
 
         return 0;

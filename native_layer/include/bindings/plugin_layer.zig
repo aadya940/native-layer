@@ -5,6 +5,8 @@ pub const TYPE_BUFFER: u32 = 1;
 pub const TYPE_STRING: u32 = 2;
 pub const TYPE_INT: u32 = 3;
 pub const TYPE_FLOAT: u32 = 4;
+pub const TYPE_JSON: u32 = 5;
+pub const TYPE_OPAQUE: u32 = 6;
 
 pub const DTYPE_F64: u32 = 0;
 pub const DTYPE_F32: u32 = 1;
@@ -17,6 +19,8 @@ pub const MemoryBuffer = extern struct {
     size: usize,
     type_id: u32,
     dtype: u32,
+    shape: ?[*]usize,
+    ndim: u32,
 };
 
 pub const GetSchemaFn = *const fn () callconv(.C) [*:0]const u8;

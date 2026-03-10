@@ -26,6 +26,8 @@ extern "C" {
 #define TYPE_STRING 2 // UTF-8 string
 #define TYPE_INT    3 // 64-bit integer scalar
 #define TYPE_FLOAT  4 // 64-bit float (double) scalar
+#define TYPE_JSON   5 // JSON string
+#define TYPE_OPAQUE 6 // Opaque binary data (application specific)
 
 /* Buffer element dtype — only meaningful when type_id == TYPE_BUFFER.
    Zero-default (DTYPE_F64) preserves backwards compatibility with existing plugins. */
@@ -43,6 +45,10 @@ typedef struct {
     size_t   size;      // Size of the buffer in bytes.
     uint32_t type_id;   // Buffer category (TYPE_*).
     uint32_t dtype;     // Element type for TYPE_BUFFER buffers (DTYPE_*).
+
+    // For multi-dimensional arrays
+    size_t* shape; // Array of dimensions (NULL for 1D scalars)
+    uint32_t ndim; // Number of dimensions
 } MemoryBuffer;
 
 
