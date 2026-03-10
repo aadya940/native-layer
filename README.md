@@ -309,8 +309,6 @@ The host marshals Python values into `MemoryBuffer` structs before calling your 
 | json type | `TYPE_JSON` | `json` |
 | type opaque | `TYPE_OPAQUE` | (void*) data |
 
-`'d'` → F64, `'f'` → F32, `'q'` → I64.
-
 ## Platform support
 
 | Platform | Status | Notes |
