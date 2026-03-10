@@ -155,7 +155,6 @@ extern "C" fn execute(
     num_inputs: usize,
     output: *mut MemoryBuffer,
 ) -> i32 {
-
     if function_name.is_null() || inputs.is_null() || output.is_null() {
         return -1;
     }
@@ -164,43 +163,33 @@ extern "C" fn execute(
     let inputs = unsafe { std::slice::from_raw_parts(inputs, num_inputs) };
 
     if fname.to_bytes() == b"json_pretty" {
-
         if num_inputs < 1 {
             return -1;
         }
-
         let input = &inputs[0];
-
         if input.type_id != TYPE_STRING || input.data.is_null() {
             return -1;
         }
-
         let bytes = unsafe {
             std::slice::from_raw_parts(input.data as *const u8, input.size)
         };
-
         let json_str = match std::str::from_utf8(bytes) {
             Ok(s) => s,
             Err(_) => return -1,
         };
-
         let value: Value = match serde_json::from_str(json_str) {
             Ok(v) => v,
             Err(_) => return -1,
         };
-
         let pretty = match serde_json::to_string_pretty(&value) {
             Ok(s) => s,
             Err(_) => return -1,
         };
-
         let out = pretty.as_bytes();
-
         let mem = unsafe { libc::malloc(out.len().max(1)) };
         if mem.is_null() {
             return -1;
         }
-
         unsafe {
             ptr::copy_nonoverlapping(out.as_ptr(), mem as *mut u8, out.len());
 
@@ -218,13 +207,10 @@ extern "C" fn execute(
 }
 
 extern "C" fn free_buffer(buffer: *mut MemoryBuffer) {
-
     if buffer.is_null() {
         return;
     }
-
     unsafe {
-
         if !(*buffer).data.is_null() {
             libc::free((*buffer).data);
         }
@@ -235,7 +221,6 @@ extern "C" fn free_buffer(buffer: *mut MemoryBuffer) {
         (*buffer).dtype = DTYPE_BYTES;
     }
 }
-
 
 static API: PluginAPI = PluginAPI {
     name: NAME.as_ptr() as *const c_char,
@@ -248,7 +233,6 @@ static API: PluginAPI = PluginAPI {
     execute: Some(execute as ExecuteFn),
     free_buffer: Some(free_buffer as FreeBufferFn),
 };
-
 
 #[no_mangle]
 pub extern "C" fn get_plugin_api() -> *mut PluginAPI {
