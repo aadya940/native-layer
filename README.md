@@ -305,7 +305,9 @@ The host marshals Python values into `MemoryBuffer` structs before calling your 
 | `double` scalar | `TYPE_FLOAT` | `float` |
 | `int64_t` scalar | `TYPE_INT` | `int` |
 | UTF-8 string | `TYPE_STRING` | `str` |
-| Opaque bytes | `TYPE_BUFFER` + `DTYPE_BYTES` | `bytes` |
+| buffer type | `TYPE_BUFFER` + `DTYPE_BYTES` + `shape` + `ndim` | `bytes` |
+| json type | `TYPE_JSON` | `json` |
+| type opaque | `TYPE_OPAQUE` | (void*) data |
 
 `'d'` → F64, `'f'` → F32, `'q'` → I64.
 
@@ -315,7 +317,7 @@ The host marshals Python values into `MemoryBuffer` structs before calling your 
 |---|---|---|
 | Windows x64 | ✅ Tested | MSVC, `.dll` |
 | Linux x64 | ✅ Should work | GCC/Clang, `.so` |
-| macOS | ⚠️ Untested | Clang, `.dylib`, expected to work |
+| macOS | ✅ Should wor | Clang, `.dylib`, expected to work |
 
 ## Security
 
