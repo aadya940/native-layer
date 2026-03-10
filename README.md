@@ -11,15 +11,31 @@ pip install .
 
 
 ### Why
-Most agent frameworks assume tools are Python functions or HTTP endpoints. If you want an agent to use performance-critical code, hardware interfaces, or existing C/C++/Rust/Zig libraries, you end up either rewriting them in Python or maintaining a pile of one-off FFI glue and serialization.
+**The missing link between AI agents and the real world.**
+Agent frameworks let LLMs call Python functions and APIs. But what if you need your agent to:
+- Use OpenCV for computer vision
+- Control a robot running ROS
+- Access CUDA for GPU computation
+- Integrate with 20 years of C++ production code
+- Run completely offline on embedded hardware
 
-Native Layer standardizes that interface. Tools are compiled plugins that expose a stable C ABI (Rust/Zig/C/C++ all work). The agent can call native code in-process, avoiding network hops, and using zero-copy buffers when possible (e.g., numeric arrays / tensors), with safe fallbacks for complex types.
+Right now, you're stuck rewriting everything in Python or building one-off FFI wrappers.
 
-Long term, agents will move closer to the hardware robotics stacks, SIMD-heavy inference, OS-adjacent tooling where latency, memory copies, and system integration matter. Native Layer borrows from OS device-driver design: self-describing plugins + function pointer tables as the core contract.
+**Native Layer solves this.** Drop a compiled plugin (.so/.dll) into a directory, and your 
+agent can call it—no bindings to write, no API servers to deploy, no Python rewrites.
 
-MCP is excellent when tools are remote or need to be language-agnostic over the network. Native Layer is optimized for local, hardware-adjacent, low-latency agent tooling where network calls and repeated serialization are the bottleneck.
+- **Any language**: C, C++, Rust, Zig—anything with C ABI
+- **Any framework**: Works with LangChain, Google ADK, Ollama, etc.
+- **Hot-reload**: Add new tools without restarting
+- **Offline-first**: No network required, runs on-device
 
-Also, hot reloading gives the ability to an AI Agent to write and register its own tools at runtime.
+This opens agents to massive ecosystems: robotics (ROS), computer vision (OpenCV), scientific 
+computing (BLAS/LAPACK), hardware drivers, legacy systems—decades of battle-tested code 
+agents couldn't access before.
+
+MCP excels at remote tools over the network. Native Layer is built for local execution: 
+robots, drones, edge devices, and any system where the agent needs to touch hardware or 
+run without internet.
 
 ## How it works
 
