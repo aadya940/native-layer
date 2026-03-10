@@ -138,7 +138,7 @@ executor = AgentExecutor(agent=agent, tools=[]).with_middleware(middleware)
 |---|---|---|
 | Google ADK ≥ 1.25.0 | `NativeADKToolset` | ✅ |
 | LangChain ≥ 1.0 | `NativeHotReloadMiddleware` | ✅ |
-| Ollama Tool Use | — | Planned |
+| Ollama Tool Use | `get_ollama_tools` | ✅ |
 
 ## Type system
 
