@@ -76,6 +76,8 @@ static int execute(const char* fn, const MemoryBuffer* inputs, size_t n, MemoryB
     out->size = sizeof(double);
     out->type_id = TYPE_FLOAT;
     out->dtype = DTYPE_F64;
+    out->shape = nullptr;
+    out->ndim = 0;
 
     if (a_tmp) free(a_tmp);
     if (b_tmp) free(b_tmp);
