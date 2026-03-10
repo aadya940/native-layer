@@ -30,7 +30,7 @@ agent can call it, no bindings to write, no API servers to deploy, no Python rew
 - **Offline-first**: No network required, runs on-device
 
 This opens agents to massive ecosystems: robotics (ROS), computer vision (OpenCV), scientific 
-computing (BLAS/LAPACK), hardware drivers, legacy systems—decades of battle-tested code 
+computing (BLAS/LAPACK), hardware drivers, legacy systems, decades of reliable code 
 agents couldn't access before.
 
 MCP excels at remote tools over the network. Native Layer is built for local execution: 
