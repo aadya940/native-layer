@@ -24,7 +24,7 @@ Right now, you're stuck rewriting everything in Python or building one-off FFI w
 **Native Layer solves this.** Drop a compiled plugin (.so/.dll) into a directory, and your 
 agent can call it, no bindings to write, no API servers to deploy, no Python rewrites.
 
-- **Any language**: C, C++, Rust, Zig—anything with C ABI
+- **Any language**: C, C++, Rust, Zig, anything with C ABI
 - **Any framework**: Works with LangChain, Google ADK, Ollama, etc.
 - **Hot-reload**: Add new tools without restarting
 - **Offline-first**: No network required, runs on-device
