@@ -53,7 +53,7 @@ Hot-reload is built in. Drop a new `.dll`/`.so` into the watched directory and t
 
 ## Writing a plugin
 
-C++
+C++ (complete demo in `demo/cpp`)
 
 ```cpp
 #include "native_layer/include/plugin_layer.h"
@@ -104,7 +104,7 @@ extern "C" EXPORT PluginAPI* get_plugin_api() { return &api; }
 ```
 
 
-Rust
+Rust (complete demo in `demo/rust`)
 ```rust
 #![allow(non_camel_case_types)]
 
