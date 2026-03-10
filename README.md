@@ -22,7 +22,7 @@ Agent frameworks let LLMs call Python functions and APIs. But what if you need y
 Right now, you're stuck rewriting everything in Python or building one-off FFI wrappers.
 
 **Native Layer solves this.** Drop a compiled plugin (.so/.dll) into a directory, and your 
-agent can call it—no bindings to write, no API servers to deploy, no Python rewrites.
+agent can call it, no bindings to write, no API servers to deploy, no Python rewrites.
 
 - **Any language**: C, C++, Rust, Zig—anything with C ABI
 - **Any framework**: Works with LangChain, Google ADK, Ollama, etc.
